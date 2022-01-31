@@ -1,19 +1,27 @@
 const mongoose = require('mongoose');
 
-
-// Define a schema
-const Schema = mongoose.Schema;
-const PandaSchema = new Schema({
+const CategorySchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
         required: true,
     },
-    skill: {
+    type: {
         type: String,
         trim: true,
         required: true,
     },
+    age: {
+        type: Number,
+        trim: true,
+        min: 50,
+        max: 100,
+        required: true
+    },
+    pandas: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Panda'
+    }],
     deleted: {
         _state: {
             type: Boolean,
@@ -31,36 +39,39 @@ const PandaSchema = new Schema({
     }
 });
 
-
 // index all string attributes for search
-PandaSchema.index({'$**': 'text'});
+CategorySchema.index({'$**': 'text'});
 
-PandaSchema.pre('aggregate', function () {
+//*********  for soft remove ********* 
+CategorySchema.pre('aggregate', function () {
     if(this._pipeline[0]['$match'].deleted === undefined)
         this._pipeline[0]['$match'].deleted = {_state: false};
 });
 
-PandaSchema.pre('countDocuments', function () {
+CategorySchema.pre('countDocuments', function () {
     if(this._conditions.deleted === undefined)
         this.where({deleted: {_state: false}});
 });
 
-PandaSchema.pre('find', function () {
+CategorySchema.pre('find', function () {
     if(this._conditions.deleted === undefined)
         this.where({deleted: {_state: false}});
+    this.populate('pandas');
 });
 
-PandaSchema.pre('findOne', function () {
+CategorySchema.pre('findOne', function () {
     if(this._conditions.deleted === undefined)
         this.where({deleted: {_state: false}});
+    this.populate('pandas');
 });
 
-PandaSchema.pre('findOneAndUpdate', function () {
+CategorySchema.pre('findOneAndUpdate', function () {
     if(this._conditions.deleted === undefined)
         this.where({deleted: {_state: false}});
     this.options.new = true;
     this.options.runValidators = true;
 
 });
-module.exports = mongoose.model('Panda', PandaSchema);
+
+module.exports = mongoose.model('Category', CategorySchema);
 

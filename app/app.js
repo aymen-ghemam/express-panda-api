@@ -26,6 +26,7 @@ const logger = require('morgan');
 
 // import my routes
 const panda = require('./routes/panda');
+const category = require('./routes/category');
 
 const bodyParser = require('body-parser');
 const mongoose = require('../config/db');
@@ -64,7 +65,7 @@ app.use(`/${context}/public`,express.static('app/public'));
 
 // endpoints
 app.use(`/${context}/panda`, panda);
-
+app.use(`/${context}/category`, category);
 
 
 
