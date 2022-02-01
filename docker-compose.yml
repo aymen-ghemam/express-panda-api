@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:5.0.2
+    restart: unless-stopped
+    env_file: ./app/var.env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$DEV_DB_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$DEV_DB_PASSWORD
+    ports:
+      - $DEV_DB_PORT:$MONGODB_DOCKER_PORT
+    volumes:
+      - db:/data/db
+  app:
+    depends_on:
+      - mongodb
+    build: ./express-panda-api
+    restart: unless-stopped
+    env_file: ./app/var/.env
+    ports:
+      - $PORT:$NODE_DOCKER_PORT
+    environment:
+      - DB_HOST=mongodb
+      - DB_USER=$DEV_DB_USERNAME
+      - DB_PASSWORD=$DEV_DB_PASSWORD
+      - DB_NAME=$DEV_DB_NAME
+      - DB_PORT=$MONGODB_DOCKER_PORT
+    stdin_open: true
+    tty: true
+
+volumes:
+  db:
